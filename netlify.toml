@@ -5,7 +5,7 @@
 
 [functions]
   node_bundler = "none"
-  included_files = ["db/**", "routes/**", "middleware/**"]
+  included_files = ["db/**", "routes/**", "middleware/**", "node_modules/sql.js/dist/sql-wasm.wasm"]
 
 # API routes -> serverless function (order matters: specific first)
 [[redirects]]
