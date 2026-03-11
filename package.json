@@ -1,0 +1,26 @@
+{
+  "name": "smpit-alfityan-website",
+  "version": "1.0.0",
+  "description": "Premium class website for SMPIT Al-Fityan",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js",
+    "seed": "node db/seed.js"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "better-sqlite3": "^9.4.3",
+    "connect-sqlite3": "^0.9.15",
+    "cookie-session": "^2.1.1",
+    "deasync": "^0.1.31",
+    "express": "^4.18.3",
+    "express-session": "^1.18.0",
+    "multer": "^1.4.5-lts.1",
+    "serverless-http": "^3.2.0",
+    "session-file-store": "^1.5.0",
+    "socket.io": "^4.7.4",
+    "sql.js": "^1.14.1",
+    "uuid": "^9.0.1"
+  }
+}

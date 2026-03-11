@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Kelola Siswa — Admin Al-Fityan</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>tailwind.config = { darkMode: 'class', theme: { extend: { fontFamily: { sans: ['Inter', 'sans-serif'] } } } }</script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+        rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <link rel="stylesheet" href="/admin.css" />
+    <style>
+        body {
+            background: #0a0f1e;
+            color: #e2e8f0;
+            font-family: 'Inter', sans-serif;
+            display: flex;
+            min-height: 100vh
+        }
+    </style>
+</head>
+
+<body>
+    <!-- SIDEBAR -->
+    <aside
+        class="w-56 bg-gray-900/90 border-r border-gray-800 flex flex-col flex-shrink-0 fixed left-0 top-0 bottom-0 z-40">
+        <div class="p-5 border-b border-gray-800">
+            <div class="flex items-center gap-2.5">
+                <div
+                    class="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-black">
+                    AF</div>
+                <div>
+                    <div class="text-white font-bold text-sm">Al-Fityan</div>
+                    <div class="text-gray-500 text-xs">Admin Panel</div>
+                </div>
+            </div>
+            <div class="mt-3 px-2 py-1.5 bg-indigo-500/10 border border-indigo-500/20 rounded-lg">
+                <div class="text-indigo-300 text-xs">Login sebagai:</div>
+                <div id="currentUser" class="text-white text-sm font-bold">—</div>
+            </div>
+        </div>
+        <nav class="flex-1 p-3 space-y-1">
+            <a href="/admin/dashboard" class="sidebar-link"><i class="fa-solid fa-gauge"></i>Dashboard</a>
+            <a href="/admin/students" class="sidebar-link active"><i class="fa-solid fa-users"></i>Siswa</a>
+            <a href="/admin/assignments" class="sidebar-link"><i class="fa-solid fa-book-open"></i>Tugas</a>
+            <a href="/admin/grades" class="sidebar-link"><i class="fa-solid fa-star"></i>Nilai</a>
+            <a href="/admin/forum" class="sidebar-link"><i class="fa-solid fa-comments"></i>Forum</a>
+            <div id="ownerLinks" class="hidden space-y-1">
+                <div class="text-gray-600 text-xs font-bold uppercase px-3 pt-3 pb-1">Owner Only</div>
+                <a href="/admin/gallery" class="sidebar-link"><i class="fa-solid fa-images"></i>Gallery</a>
+                <a href="/admin/logs" class="sidebar-link"><i class="fa-solid fa-scroll"></i>Admin Logs</a>
+                <a href="/admin/access" class="sidebar-link"><i class="fa-solid fa-key"></i>Access Manager</a>
+            </div>
+        </nav>
+        <div class="p-3 border-t border-gray-800 space-y-1">
+            <a href="/" target="_blank" class="sidebar-link"><i class="fa-solid fa-globe"></i>Lihat Website</a>
+            <a href="/auth/logout" class="sidebar-link text-red-400"><i class="fa-solid fa-sign-out-alt"></i>Logout</a>
+        </div>
+    </aside>
+
+    <main class="ml-56 flex-1 p-6">
+        <div class="flex items-center justify-between mb-6 flex-wrap gap-3">
+            <div>
+                <h1 class="text-2xl font-black text-white">👥 Kelola Siswa</h1>
+                <p class="text-gray-400 text-sm">Tambah, edit, atau hapus data siswa</p>
+            </div>
+            <button onclick="openModal()" class="btn btn-primary"><i class="fa-solid fa-plus"></i>Tambah Siswa</button>
+        </div>
+
+        <!-- Search -->
+        <div class="relative mb-4 max-w-sm">
+            <i class="fa-solid fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm"></i>
+            <input id="searchInput" type="text" placeholder="Cari nama atau NIS..." oninput="filterTable()"
+                class="form-input pl-9 text-sm" />
+        </div>
+
+        <div class="bg-gray-900 rounded-2xl border border-gray-800 overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="data-table" id="studentsTable">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Nama</th>
+                            <th>NIS</th>
+                            <th>Kelas</th>
+                            <th>Poin</th>
+                            <th>Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="studentsBody">
+                        <tr>
+                            <td colspan="6" class="text-center text-gray-500 py-8">Memuat...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <!-- MODAL -->
+    <div id="modal" class="modal-overlay hidden">
+        <div class="modal-box">
+            <h3 id="modalTitle" class="text-lg font-bold text-white mb-5">Tambah Siswa</h3>
+            <input type="hidden" id="editId" />
+            <div class="space-y-3">
+                <div><label class="form-label">Nama Lengkap</label><input id="fName" type="text" class="form-input"
+                        placeholder="Nama lengkap siswa" /></div>
+                <div><label class="form-label">NIS</label><input id="fNis" type="text" class="form-input"
+                        placeholder="Nomor Induk Siswa" /></div>
+                <div><label class="form-label">Kelas</label><input id="fClass" type="text" class="form-input"
+                        value="8B Ahmad bin Hambal" /></div>
+                <div><label class="form-label">Poin Awal</label><input id="fPoints" type="number" class="form-input"
+                        value="0" min="0" /></div>
+            </div>
+            <p id="modalErr" class="text-red-400 text-xs mt-2 hidden"></p>
+            <div class="flex gap-3 mt-5">
+                <button onclick="closeModal()"
+                    class="flex-1 py-2.5 bg-gray-700 text-gray-300 rounded-xl font-semibold text-sm hover:bg-gray-600">Batal</button>
+                <button onclick="saveStudent()" class="flex-1 btn btn-primary justify-center"><i
+                        class="fa-solid fa-check"></i>Simpan</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let students = [];
+        async function init() {
+            const me = await (await fetch('/auth/me')).json();
+            if (!me.user) return (window.location.href = '/login.html');
+            document.getElementById('currentUser').textContent = me.user.username + (me.user.role === 'owner' ? ' 👑' : '');
+            if (me.user.role === 'owner') document.getElementById('ownerLinks').classList.remove('hidden');
+            await loadStudents();
+        }
+
+        async function loadStudents() {
+            const r = await fetch('/admin/api/students');
+            students = await r.json();
+            renderTable(students);
+        }
+
+        function renderTable(data) {
+            document.getElementById('studentsBody').innerHTML = data.length ? data.map((s, i) => `
+      <tr>
+        <td class="text-gray-500">${i + 1}</td>
+        <td><div class="flex items-center gap-2.5">
+          <div class="w-8 h-8 rounded-lg flex items-center justify-center text-white font-bold text-xs flex-shrink-0" style="background:${s.avatar_color || '#6366f1'}">${s.name.split(' ').map(n => n[0]).join('').substring(0, 2)}</div>
+          <span class="font-semibold">${s.name}</span>
+        </div></td>
+        <td class="text-gray-400 font-mono text-sm">${s.nis}</td>
+        <td><span class="badge" style="background:rgba(99,102,241,.15);color:#a78bfa">${s.class}</span></td>
+        <td><span class="font-black text-indigo-400 text-base">${s.points}</span> <span class="text-gray-600 text-xs">pts</span></td>
+        <td><div class="flex gap-2">
+          <button onclick="editStudent(${s.id})" class="btn btn-success text-xs py-1.5 px-3"><i class="fa-solid fa-pen"></i>Edit</button>
+          <button onclick="deleteStudent(${s.id},'${s.name}')" class="btn btn-danger text-xs py-1.5 px-3"><i class="fa-solid fa-trash"></i>Hapus</button>
+        </div></td>
+      </tr>`).join('') : '<tr><td colspan="6" class="text-center text-gray-500 py-8">Tidak ada data siswa.</td></tr>';
+        }
+
+        function filterTable() {
+            const q = document.getElementById('searchInput').value.toLowerCase();
+            renderTable(students.filter(s => s.name.toLowerCase().includes(q) || s.nis.includes(q)));
+        }
+
+        function openModal(id) {
+            document.getElementById('modal').classList.remove('hidden');
+            document.getElementById('editId').value = '';
+            document.getElementById('fName').value = '';
+            document.getElementById('fNis').value = '';
+            document.getElementById('fClass').value = '8B Ahmad bin Hambal';
+            document.getElementById('fPoints').value = '0';
+            document.getElementById('modalErr').classList.add('hidden');
+            document.getElementById('modalTitle').textContent = 'Tambah Siswa';
+        }
+
+        function editStudent(id) {
+            const s = students.find(x => x.id === id);
+            if (!s) return;
+            document.getElementById('modal').classList.remove('hidden');
+            document.getElementById('editId').value = id;
+            document.getElementById('fName').value = s.name;
+            document.getElementById('fNis').value = s.nis;
+            document.getElementById('fClass').value = s.class;
+            document.getElementById('fPoints').value = s.points;
+            document.getElementById('modalTitle').textContent = 'Edit Siswa';
+            document.getElementById('modalErr').classList.add('hidden');
+        }
+
+        async function saveStudent() {
+            const id = document.getElementById('editId').value;
+            const body = { name: document.getElementById('fName').value, nis: document.getElementById('fNis').value, class: document.getElementById('fClass').value, points: parseInt(document.getElementById('fPoints').value) || 0 };
+            const url = id ? `/admin/api/students/${id}` : '/admin/api/students';
+            const method = id ? 'PUT' : 'POST';
+            const r = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+            const d = await r.json();
+            if (d.success) { closeModal(); loadStudents(); showToast(id ? 'Siswa diperbarui!' : 'Siswa ditambahkan!', '#10b981'); }
+            else { document.getElementById('modalErr').textContent = d.message; document.getElementById('modalErr').classList.remove('hidden'); }
+        }
+
+        async function deleteStudent(id, name) {
+            if (!confirm(`Hapus siswa "${name}"? Data nilai juga akan terhapus.`)) return;
+            await fetch(`/admin/api/students/${id}`, { method: 'DELETE' });
+            loadStudents(); showToast('Siswa dihapus.', '#ef4444');
+        }
+
+        function closeModal() { document.getElementById('modal').classList.add('hidden'); }
+
+        function showToast(msg, color) {
+            const t = document.createElement('div');
+            t.className = 'toast-admin'; t.style.background = color; t.textContent = msg;
+            document.body.appendChild(t);
+            setTimeout(() => t.remove(), 3000);
+        }
+        init();
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="id" class="scroll-smooth">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Login Admin — SMPIT Al-Fityan</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    animation: {
+                        fadeInUp: 'fadeInUp .6s ease both',
+                        float: 'float 6s ease-in-out infinite'
+                    },
+                    keyframes: {
+                        fadeInUp: {
+                            '0%': { opacity: '0', transform: 'translateY(30px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' }
+                        },
+                        float: {
+                            '0%,100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-12px)' }
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+        rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 30%, #4c1d95 60%, #6d28d9 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .glass {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+        }
+
+        .input-field {
+            width: 100%;
+            padding: 14px 16px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: white;
+            font-size: 14px;
+            outline: none;
+            transition: all .3s;
+        }
+
+        .input-field:focus {
+            border-color: #a78bfa;
+            box-shadow: 0 0 0 3px rgba(167, 139, 250, 0.2);
+        }
+
+        .input-field::placeholder {
+            color: rgba(255, 255, 255, 0.35);
+        }
+
+        .input-secret {
+            text-align: center;
+            letter-spacing: 0.5em;
+            font-size: 20px;
+        }
+
+        .input-otc {
+            letter-spacing: 0.12em;
+            font-family: monospace;
+        }
+
+        .btn-primary {
+            width: 100%;
+            padding: 14px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #7c3aed, #6d28d9);
+            color: white;
+            font-weight: 700;
+            font-size: 15px;
+            border: none;
+            cursor: pointer;
+            transition: all .2s;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            opacity: 0.9;
+            transform: scale(1.02);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .blob {
+            position: absolute;
+            border-radius: 9999px;
+            filter: blur(60px);
+            pointer-events: none;
+        }
+
+        .badge-info {
+            background: rgba(245, 158, 11, 0.1);
+            border: 1px solid rgba(245, 158, 11, 0.25);
+            border-radius: 16px;
+            padding: 10px 14px;
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+
+        .badge-success {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.25);
+            border-radius: 12px;
+            padding: 10px 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+
+        .err-msg {
+            color: #f87171;
+            font-size: 12px;
+            margin-bottom: 10px;
+            padding: 0 4px;
+        }
+
+        .toggle-pass {
+            position: absolute;
+            right: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: rgba(255, 255, 255, 0.4);
+            cursor: pointer;
+            transition: color .2s;
+        }
+
+        .toggle-pass:hover {
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .link-subtle {
+            color: rgba(255, 255, 255, 0.4);
+            font-size: 12px;
+            text-align: center;
+            cursor: pointer;
+            padding: 8px;
+            display: block;
+            width: 100%;
+            background: none;
+            border: none;
+            transition: color .2s;
+        }
+
+        .link-subtle:hover {
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .label {
+            display: block;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            margin-bottom: 6px;
+        }
+
+        .spin {
+            animation: spin 1s linear infinite;
+            display: inline-block;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Floating blobs -->
+    <div class="blob"
+        style="width:260px;height:260px;background:rgba(168,85,247,0.25);top:40px;left:40px;animation:float 6s ease-in-out infinite">
+    </div>
+    <div class="blob"
+        style="width:320px;height:320px;background:rgba(236,72,153,0.15);bottom:40px;right:40px;animation:float 8s ease-in-out infinite 3s">
+    </div>
+    <div class="blob"
+        style="width:380px;height:380px;background:rgba(99,102,241,0.12);top:40%;left:40%;animation:float 7s ease-in-out infinite 1.5s">
+    </div>
+
+    <div style="position:relative;z-index:10;width:100%;max-width:420px;margin:0 16px;animation:fadeInUp .6s ease both">
+        <a href="/"
+            style="display:inline-flex;align-items:center;gap:8px;color:rgba(255,255,255,0.6);font-size:13px;margin-bottom:20px;text-decoration:none;transition:color .2s"
+            onmouseover="this.style.color='white'" onmouseout="this.style.color='rgba(255,255,255,0.6)'">
+            <i class="fa-solid fa-arrow-left"></i> Kembali ke Beranda
+        </a>
+
+        <div class="glass" style="border-radius:24px;padding:32px;box-shadow:0 25px 50px rgba(0,0,0,0.4)">
+            <!-- Logo -->
+            <div style="text-align:center;margin-bottom:28px">
+                <div
+                    style="width:64px;height:64px;border-radius:18px;background:linear-gradient(135deg,#7c3aed,#5b21b6);display:flex;align-items:center;justify-content:center;font-size:28px;margin:0 auto 12px;box-shadow:0 8px 24px rgba(109,40,217,0.4)">
+                    🔒</div>
+                <h1 style="color:white;font-size:22px;font-weight:900;margin:0">Admin Panel</h1>
+                <p style="color:rgba(255,255,255,0.5);font-size:13px;margin-top:4px">SMPIT Al-Fityan 8B Ahmad bin Hambal
+                </p>
+            </div>
+
+            <!-- Step 1: Secret Gate -->
+            <div id="step1">
+                <div class="badge-info">
+                    <i class="fa-solid fa-shield-halved" style="color:#fbbf24;margin-top:2px;flex-shrink:0"></i>
+                    <p style="color:rgba(253,230,138,0.85);font-size:12px;margin:0">Masukkan <strong
+                            style="color:#fde68a">kode rahasia</strong> terlebih dahulu untuk membuka form login.</p>
+                </div>
+                <label class="label">Kode Rahasia</label>
+                <input id="secretInput" type="password" placeholder="●●●●●●●●" class="input-field input-secret"
+                    style="margin-bottom:6px" />
+                <p id="secretErr" class="err-msg" style="display:none"></p>
+                <button id="secretBtn" class="btn-primary" style="margin-top:8px">
+                    <i class="fa-solid fa-key" style="margin-right:8px"></i>Verifikasi Kode
+                </button>
+            </div>
+
+            <!-- Step 2: Login Form -->
+            <div id="step2" style="display:none">
+                <div class="badge-success">
+                    <i class="fa-solid fa-check-circle" style="color:#34d399"></i>
+                    <span style="color:#6ee7b7;font-size:14px;font-weight:600">Kode terverifikasi! Silakan login.</span>
+                </div>
+
+                <label class="label">Username</label>
+                <input id="loginUser" type="text" placeholder="Username..." class="input-field"
+                    style="margin-bottom:16px" />
+
+                <label class="label">Password</label>
+                <div style="position:relative;margin-bottom:16px">
+                    <input id="loginPass" type="password" placeholder="Password..." class="input-field"
+                        style="padding-right:48px" />
+                    <button type="button" id="togglePass" class="toggle-pass">
+                        <i id="togglePassIcon" class="fa-regular fa-eye"></i>
+                    </button>
+                </div>
+
+                <!-- OTC Section -->
+                <div id="otcSection" style="display:none;margin-bottom:16px">
+                    <label class="label">Kode Akses (First Login)</label>
+                    <input id="loginOtc" type="text" placeholder="AF-XXXXXXXX" class="input-field input-otc" />
+                    <p style="color:rgba(255,255,255,0.4);font-size:11px;margin-top:6px;padding:0 4px">
+                        <i class="fa-solid fa-info-circle" style="margin-right:4px"></i>Minta kode akses dari Owner
+                        untuk login pertama kali.
+                    </p>
+                </div>
+
+                <p id="loginErr" class="err-msg" style="display:none"></p>
+                <button id="loginBtn" class="btn-primary">
+                    <i class="fa-solid fa-sign-in-alt" style="margin-right:8px"></i>Login
+                </button>
+                <button id="toggleOtcBtn" class="link-subtle" style="margin-top:8px">
+                    First login? Masukkan kode akses dari Owner
+                </button>
+            </div>
+        </div>
+
+        <p style="text-align:center;color:rgba(255,255,255,0.25);font-size:11px;margin-top:20px">SMPIT Al-Fityan ©
+            2025/2026</p>
+    </div>
+
+    <script>
+        // ── Secret Gate ──────────────────────────────────────────────────────────
+        async function verifySecret() {
+            const code = document.getElementById('secretInput').value.trim();
+            if (!code) return;
+            const btn = document.getElementById('secretBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spin"><i class="fa-solid fa-spinner"></i></span> Memeriksa...';
+
+            try {
+                const r = await fetch('/auth/secret-check', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ code })
+                });
+                const d = await r.json();
+                if (d.success) {
+                    document.getElementById('step1').style.display = 'none';
+                    document.getElementById('step2').style.display = 'block';
+                    document.getElementById('loginUser').focus();
+                } else {
+                    const err = document.getElementById('secretErr');
+                    err.textContent = d.message;
+                    err.style.display = 'block';
+                    document.getElementById('secretInput').focus();
+                }
+            } catch (e) {
+                const err = document.getElementById('secretErr');
+                err.textContent = 'Koneksi gagal. Pastikan server berjalan.';
+                err.style.display = 'block';
+            }
+
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fa-solid fa-key" style="margin-right:8px"></i>Verifikasi Kode';
+        }
+
+        document.getElementById('secretBtn').addEventListener('click', verifySecret);
+        document.getElementById('secretInput').addEventListener('keydown', e => {
+            if (e.key === 'Enter') verifySecret();
+        });
+
+        // ── Toggle password visibility ────────────────────────────────────────────
+        document.getElementById('togglePass').addEventListener('click', () => {
+            const p = document.getElementById('loginPass');
+            const icon = document.getElementById('togglePassIcon');
+            if (p.type === 'password') {
+                p.type = 'text';
+                icon.className = 'fa-regular fa-eye-slash';
+            } else {
+                p.type = 'password';
+                icon.className = 'fa-regular fa-eye';
+            }
+        });
+
+        // ── OTC toggle ────────────────────────────────────────────────────────────
+        document.getElementById('toggleOtcBtn').addEventListener('click', () => {
+            const otc = document.getElementById('otcSection');
+            if (otc.style.display === 'none') {
+                otc.style.display = 'block';
+                document.getElementById('loginOtc').focus();
+            } else {
+                otc.style.display = 'none';
+            }
+        });
+
+        // ── Login ─────────────────────────────────────────────────────────────────
+        async function doLogin() {
+            const username = document.getElementById('loginUser').value.trim();
+            const password = document.getElementById('loginPass').value;
+            const one_time_code = document.getElementById('loginOtc').value.trim();
+
+            if (!username || !password) {
+                const err = document.getElementById('loginErr');
+                err.textContent = 'Username dan password wajib diisi.';
+                err.style.display = 'block';
+                return;
+            }
+
+            const btn = document.getElementById('loginBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spin"><i class="fa-solid fa-spinner"></i></span> Logging in...';
+
+            try {
+                const r = await fetch('/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password, one_time_code })
+                });
+                const d = await r.json();
+                if (d.success) {
+                    window.location.href = d.redirect;
+                    return;
+                }
+                const err = document.getElementById('loginErr');
+                err.textContent = d.message;
+                err.style.display = 'block';
+            } catch (e) {
+                const err = document.getElementById('loginErr');
+                err.textContent = 'Koneksi gagal. Pastikan server berjalan.';
+                err.style.display = 'block';
+            }
+
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fa-solid fa-sign-in-alt" style="margin-right:8px"></i>Login';
+        }
+
+        document.getElementById('loginBtn').addEventListener('click', doLogin);
+        document.getElementById('loginUser').addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('loginPass').focus(); });
+        document.getElementById('loginPass').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+        document.getElementById('loginOtc').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+
+        // ── Show error if redirected due to no session ─────────────────────────────
+        const q = new URLSearchParams(location.search);
+        if (q.get('error') === 'not_logged_in') {
+            // Auto-open step1, already shown by default
+        }
+    </script>
+</body>
+
+</html>

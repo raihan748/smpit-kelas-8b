@@ -1,0 +1,30 @@
+[build]
+  publish = "public"
+  functions = "netlify/functions"
+  command = "npm install"
+
+[functions]
+  node_bundler = "none"
+  included_files = ["db/**", "routes/**", "middleware/**"]
+
+# API routes -> serverless function (order matters: specific first)
+[[redirects]]
+  from = "/admin/api/*"
+  to = "/.netlify/functions/api/admin/api/:splat"
+  status = 200
+
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/api/api/:splat"
+  status = 200
+
+[[redirects]]
+  from = "/auth/*"
+  to = "/.netlify/functions/api/auth/:splat"
+  status = 200
+
+# Admin HTML pages (clean URLs without .html)
+[[redirects]]
+  from = "/admin/:page"
+  to = "/admin/:page.html"
+  status = 200

@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Input Nilai — Admin Al-Fityan</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>tailwind.config = { darkMode: 'class', theme: { extend: { fontFamily: { sans: ['Inter', 'sans-serif'] } } } }</script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+        rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <link rel="stylesheet" href="/admin.css" />
+    <style>
+        body {
+            background: #0a0f1e;
+            color: #e2e8f0;
+            font-family: 'Inter', sans-serif;
+            display: flex;
+            min-height: 100vh
+        }
+    </style>
+</head>
+
+<body>
+    <aside
+        class="w-56 bg-gray-900/90 border-r border-gray-800 flex flex-col flex-shrink-0 fixed left-0 top-0 bottom-0 z-40">
+        <div class="p-5 border-b border-gray-800">
+            <div class="flex items-center gap-2.5">
+                <div
+                    class="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-black">
+                    AF</div>
+                <div>
+                    <div class="text-white font-bold text-sm">Al-Fityan</div>
+                    <div class="text-gray-500 text-xs">Admin Panel</div>
+                </div>
+            </div>
+            <div class="mt-3 px-2 py-1.5 bg-indigo-500/10 border border-indigo-500/20 rounded-lg">
+                <div class="text-indigo-300 text-xs">Login sebagai:</div>
+                <div id="currentUser" class="text-white text-sm font-bold">—</div>
+            </div>
+        </div>
+        <nav class="flex-1 p-3 space-y-1">
+            <a href="/admin/dashboard" class="sidebar-link"><i class="fa-solid fa-gauge"></i>Dashboard</a>
+            <a href="/admin/students" class="sidebar-link"><i class="fa-solid fa-users"></i>Siswa</a>
+            <a href="/admin/assignments" class="sidebar-link"><i class="fa-solid fa-book-open"></i>Tugas</a>
+            <a href="/admin/grades" class="sidebar-link active"><i class="fa-solid fa-star"></i>Nilai</a>
+            <a href="/admin/forum" class="sidebar-link"><i class="fa-solid fa-comments"></i>Forum</a>
+            <div id="ownerLinks" class="hidden space-y-1">
+                <div class="text-gray-600 text-xs font-bold uppercase px-3 pt-3 pb-1">Owner Only</div>
+                <a href="/admin/gallery" class="sidebar-link"><i class="fa-solid fa-images"></i>Gallery</a>
+                <a href="/admin/logs" class="sidebar-link"><i class="fa-solid fa-scroll"></i>Admin Logs</a>
+                <a href="/admin/access" class="sidebar-link"><i class="fa-solid fa-key"></i>Access Manager</a>
+            </div>
+        </nav>
+        <div class="p-3 border-t border-gray-800 space-y-1">
+            <a href="/" target="_blank" class="sidebar-link"><i class="fa-solid fa-globe"></i>Lihat Website</a>
+            <a href="/auth/logout" class="sidebar-link text-red-400"><i class="fa-solid fa-sign-out-alt"></i>Logout</a>
+        </div>
+    </aside>
+
+    <main class="ml-56 flex-1 p-6">
+        <div class="mb-6">
+            <h1 class="text-2xl font-black text-white">⭐ Input Nilai</h1>
+            <p class="text-gray-400 text-sm">Tambah atau perbarui nilai siswa — poin dihitung otomatis</p>
+        </div>
+
+        <!-- Input Form -->
+        <div class="bg-gray-900 rounded-2xl border border-gray-800 p-5 mb-6">
+            <h2 class="text-base font-bold text-white mb-4">Masukkan Nilai Baru</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                <div><label class="form-label">Siswa</label>
+                    <select id="fStudent" class="form-input" onchange="previewPoints()">
+                        <option value="">— Pilih Siswa —</option>
+                    </select>
+                </div>
+                <div><label class="form-label">Tugas</label>
+                    <select id="fAssignment" class="form-input">
+                        <option value="">— Pilih Tugas —</option>
+                    </select>
+                </div>
+                <div><label class="form-label">Nilai (0–100)</label>
+                    <input id="fScore" type="number" min="0" max="100" class="form-input" placeholder="Contoh: 85"
+                        oninput="previewPoints()" />
+                </div>
+            </div>
+            <!-- Points preview -->
+            <div id="pointsPreview"
+                class="hidden bg-indigo-500/10 border border-indigo-500/20 rounded-xl p-3 mb-4 flex items-center gap-3">
+                <i class="fa-solid fa-star text-yellow-400 text-lg"></i>
+                <div class="text-sm">Nilai <strong id="previewScore" class="text-white">—</strong> akan memberikan
+                    <strong id="previewPts" class="text-indigo-400 text-lg">—</strong> poin</div>
+                <span id="previewLabel" class="ml-auto badge"
+                    style="background:rgba(99,102,241,.2);color:#a78bfa"></span>
+            </div>
+            <button onclick="submitGrade()" class="btn btn-primary"><i class="fa-solid fa-check"></i>Simpan
+                Nilai</button>
+            <p id="formMsg" class="text-sm mt-2 hidden"></p>
+        </div>
+
+        <!-- Grades table -->
+        <div class="bg-gray-900 rounded-2xl border border-gray-800 overflow-hidden">
+            <div class="p-4 border-b border-gray-800 flex items-center justify-between">
+                <h2 class="text-base font-bold text-white">Semua Nilai Tercatat</h2>
+                <input id="gradeSearch" type="text" placeholder="Cari nama..." oninput="filterGrades()"
+                    class="form-input w-48 text-sm" />
+            </div>
+            <div class="overflow-x-auto">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Siswa</th>
+                            <th>Tugas</th>
+                            <th>Mata Pelajaran</th>
+                            <th>Nilai</th>
+                            <th>Poin</th>
+                            <th>Dinilai</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody id="gradesBody">
+                        <tr>
+                            <td colspan="7" class="text-center text-gray-500 py-8">Memuat...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        let allGrades = [];
+        let students = [];
+        let assignments = [];
+
+        function calcPoints(s) { return s >= 90 ? 50 : s >= 80 ? 35 : s >= 70 ? 20 : s >= 60 ? 10 : 5; }
+        function scoreLabel(s) { return s >= 90 ? 'Sangat Baik' : s >= 80 ? 'Baik' : s >= 70 ? 'Cukup' : s >= 60 ? 'Perlu Belajar' : 'Kurang'; }
+        function scoreColor(s) { return s >= 90 ? '#10b981' : s >= 80 ? '#3b82f6' : s >= 70 ? '#f59e0b' : s >= 60 ? '#f97316' : '#ef4444'; }
+
+        function previewPoints() {
+            const score = parseFloat(document.getElementById('fScore').value);
+            if (isNaN(score)) { document.getElementById('pointsPreview').classList.add('hidden'); return; }
+            const pts = calcPoints(score);
+            document.getElementById('pointsPreview').classList.remove('hidden');
+            document.getElementById('previewScore').textContent = score;
+            document.getElementById('previewPts').textContent = pts + ' poin';
+            document.getElementById('previewLabel').textContent = scoreLabel(score);
+        }
+
+        async function init() {
+            const me = await (await fetch('/auth/me')).json();
+            if (!me.user) return (window.location.href = '/login.html');
+            document.getElementById('currentUser').textContent = me.user.username + (me.user.role === 'owner' ? ' 👑' : '');
+            if (me.user.role === 'owner') document.getElementById('ownerLinks').classList.remove('hidden');
+
+            [students, assignments] = await Promise.all([
+                fetch('/admin/api/students').then(r => r.json()),
+                fetch('/admin/api/assignments').then(r => r.json()),
+            ]);
+            const ss = document.getElementById('fStudent');
+            students.forEach(s => { const o = document.createElement('option'); o.value = s.id; o.textContent = `${s.name} (${s.nis})`; ss.appendChild(o); });
+            const sa = document.getElementById('fAssignment');
+            assignments.forEach(a => { const o = document.createElement('option'); o.value = a.id; o.textContent = `${a.title} — ${a.subject}`; sa.appendChild(o); });
+            await loadGrades();
+        }
+
+        async function loadGrades() {
+            const r = await fetch('/admin/api/grades');
+            allGrades = await r.json();
+            renderGrades(allGrades);
+        }
+
+        function renderGrades(data) {
+            document.getElementById('gradesBody').innerHTML = data.length ? data.map(g => `
+      <tr>
+        <td class="font-semibold">${g.student_name}</td>
+        <td class="text-gray-400 text-sm max-w-xs truncate">${g.assignment_title}</td>
+        <td><span class="badge" style="background:rgba(99,102,241,.1);color:#a78bfa">${g.subject}</span></td>
+        <td><span class="font-black text-lg" style="color:${scoreColor(g.score)}">${g.score}</span></td>
+        <td><span class="text-indigo-400 font-bold">+${g.points_awarded}</span></td>
+        <td class="text-gray-500 text-xs">${g.graded_by} · ${g.graded_at?.split(' ')[0] || ''}</td>
+        <td><button onclick="delGrade(${g.id})" class="btn btn-danger text-xs py-1 px-2"><i class="fa-solid fa-trash"></i></button></td>
+      </tr>`).join('') : '<tr><td colspan="7" class="text-center text-gray-500 py-8">Belum ada nilai.</td></tr>';
+        }
+
+        function filterGrades() {
+            const q = document.getElementById('gradeSearch').value.toLowerCase();
+            renderGrades(allGrades.filter(g => g.student_name.toLowerCase().includes(q) || g.assignment_title.toLowerCase().includes(q)));
+        }
+
+        async function submitGrade() {
+            const student_id = document.getElementById('fStudent').value;
+            const assignment_id = document.getElementById('fAssignment').value;
+            const score = document.getElementById('fScore').value;
+            if (!student_id || !assignment_id || !score) return showMsg('Lengkapi semua field!', '#ef4444');
+            const r = await fetch('/admin/api/grades', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ student_id, assignment_id, score }) });
+            const d = await r.json();
+            if (d.success) { showMsg(`Nilai disimpan! +${d.points_awarded} poin diberikan 🎉`, '#10b981'); loadGrades(); document.getElementById('fScore').value = ''; document.getElementById('pointsPreview').classList.add('hidden'); }
+            else showMsg(d.message, '#ef4444');
+        }
+
+        async function delGrade(id) {
+            if (!confirm('Hapus nilai ini? Poin akan disesuaikan.')) return;
+            await fetch(`/admin/api/grades/${id}`, { method: 'DELETE' }); loadGrades(); showMsg('Nilai dihapus.', '#ef4444');
+        }
+
+        function showMsg(msg, color) {
+            const el = document.getElementById('formMsg');
+            el.textContent = msg; el.style.color = color; el.classList.remove('hidden');
+            setTimeout(() => el.classList.add('hidden'), 4000);
+        }
+        init();
+    </script>
+</body>
+
+</html>

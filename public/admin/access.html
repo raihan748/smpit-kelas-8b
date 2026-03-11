@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Access Manager — Admin Al-Fityan</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>tailwind.config = { darkMode: 'class', theme: { extend: { fontFamily: { sans: ['Inter', 'sans-serif'] } } } }</script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+        rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <link rel="stylesheet" href="/admin.css" />
+    <style>
+        body {
+            background: #0a0f1e;
+            color: #e2e8f0;
+            font-family: 'Inter', sans-serif;
+            display: flex;
+            min-height: 100vh
+        }
+
+        .code-box {
+            background: #0d1117;
+            border: 1px solid #30363d;
+            border-radius: 12px;
+            padding: 12px 16px;
+            font-family: 'Fira Code', monospace;
+            letter-spacing: .1em;
+            font-size: 18px;
+            color: #6ee7b7;
+            cursor: pointer;
+            transition: all .2s
+        }
+
+        .code-box:hover {
+            border-color: #6ee7b7
+        }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code&display=swap" rel="stylesheet" />
+</head>
+
+<body>
+    <aside
+        class="w-56 bg-gray-900/90 border-r border-gray-800 flex flex-col flex-shrink-0 fixed left-0 top-0 bottom-0 z-40">
+        <div class="p-5 border-b border-gray-800">
+            <div class="flex items-center gap-2.5">
+                <div
+                    class="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-black">
+                    AF</div>
+                <div>
+                    <div class="text-white font-bold text-sm">Al-Fityan</div>
+                    <div class="text-gray-500 text-xs">Admin Panel</div>
+                </div>
+            </div>
+            <div class="mt-3 px-2 py-1.5 bg-indigo-500/10 border border-indigo-500/20 rounded-lg">
+                <div class="text-indigo-300 text-xs">Login sebagai:</div>
+                <div id="currentUser" class="text-white text-sm font-bold">—</div>
+            </div>
+        </div>
+        <nav class="flex-1 p-3 space-y-1">
+            <a href="/admin/dashboard" class="sidebar-link"><i class="fa-solid fa-gauge"></i>Dashboard</a>
+            <a href="/admin/students" class="sidebar-link"><i class="fa-solid fa-users"></i>Siswa</a>
+            <a href="/admin/assignments" class="sidebar-link"><i class="fa-solid fa-book-open"></i>Tugas</a>
+            <a href="/admin/grades" class="sidebar-link"><i class="fa-solid fa-star"></i>Nilai</a>
+            <a href="/admin/forum" class="sidebar-link"><i class="fa-solid fa-comments"></i>Forum</a>
+            <div class="space-y-1">
+                <div class="text-gray-600 text-xs font-bold uppercase px-3 pt-3 pb-1">Owner Only</div>
+                <a href="/admin/gallery" class="sidebar-link"><i class="fa-solid fa-images"></i>Gallery</a>
+                <a href="/admin/logs" class="sidebar-link"><i class="fa-solid fa-scroll"></i>Admin Logs</a>
+                <a href="/admin/access" class="sidebar-link active"><i class="fa-solid fa-key"></i>Access Manager</a>
+            </div>
+        </nav>
+        <div class="p-3 border-t border-gray-800 space-y-1">
+            <a href="/" target="_blank" class="sidebar-link"><i class="fa-solid fa-globe"></i>Lihat Website</a>
+            <a href="/auth/logout" class="sidebar-link text-red-400"><i class="fa-solid fa-sign-out-alt"></i>Logout</a>
+        </div>
+    </aside>
+
+    <main class="ml-56 flex-1 p-6">
+        <div class="mb-6">
+            <h1 class="text-2xl font-black text-white">🔑 Access Manager</h1>
+            <p class="text-gray-400 text-sm">Generate kode akses one-time untuk admin regular (Owner only)</p>
+        </div>
+
+        <!-- Info -->
+        <div class="bg-blue-500/10 border border-blue-500/20 rounded-2xl p-4 mb-6">
+            <i class="fa-solid fa-circle-info text-blue-400 mr-2"></i>
+            <span class="text-blue-300 text-sm">Kode akses hanya bisa digunakan <strong>sekali</strong>. Setelah admin
+                login dengan kode ini, mereka diarahkan ke halaman "Set Password". Kode tidak dapat digunakan lagi
+                setelah dipakai.</span>
+        </div>
+
+        <!-- Generate code form -->
+        <div class="bg-gray-900 rounded-2xl border border-gray-800 p-5 mb-6">
+            <h2 class="text-base font-bold text-white mb-4">Generate Kode Akses</h2>
+            <div class="flex gap-3 flex-wrap">
+                <div class="flex-1 min-w-48">
+                    <label class="form-label">Pilih Admin</label>
+                    <select id="adminSelect" class="form-input">
+                        <option value="">— Pilih admin —</option>
+                    </select>
+                </div>
+                <div class="flex items-end">
+                    <button onclick="generateCode()" class="btn btn-primary h-[42px]"><i
+                            class="fa-solid fa-key"></i>Generate Kode</button>
+                </div>
+            </div>
+
+            <!-- Generated code display -->
+            <div id="generatedBox" class="hidden mt-4">
+                <label class="form-label">Kode yang Dihasilkan — Bagikan ke Admin:</label>
+                <div class="flex items-center gap-3">
+                    <div id="generatedCode" class="code-box flex-1" onclick="copyCode()">—</div>
+                    <button onclick="copyCode()" class="btn"
+                        style="background:rgba(99,102,241,.15);color:#a78bfa;height:48px">
+                        <i class="fa-solid fa-copy"></i>Salin
+                    </button>
+                </div>
+                <p class="text-gray-500 text-xs mt-2"><i
+                        class="fa-solid fa-triangle-exclamation text-amber-500 mr-1"></i>Simpan kode ini! Tidak bisa
+                    dilihat lagi setelah refresh halaman.</p>
+            </div>
+        </div>
+
+        <!-- Admin status list -->
+        <div class="bg-gray-900 rounded-2xl border border-gray-800 p-5 mb-6">
+            <h2 class="text-base font-bold text-white mb-4">Status Admin</h2>
+            <div id="adminStatusList"></div>
+        </div>
+
+        <!-- Codes history -->
+        <div class="bg-gray-900 rounded-2xl border border-gray-800 overflow-hidden">
+            <div class="p-4 border-b border-gray-800">
+                <h2 class="text-base font-bold text-white">Riwayat Kode</h2>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Kode</th>
+                            <th>Untuk Admin</th>
+                            <th>Status</th>
+                            <th>Dibuat</th>
+                        </tr>
+                    </thead>
+                    <tbody id="codesBody">
+                        <tr>
+                            <td colspan="4" class="text-center text-gray-500 py-6">Memuat...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        let lastGenCode = '';
+        async function init() {
+            const me = await (await fetch('/auth/me')).json();
+            if (!me.user) return (window.location.href = '/login.html');
+            if (me.user.role !== 'owner') return (window.location.href = '/admin/dashboard');
+            document.getElementById('currentUser').textContent = me.user.username + ' 👑';
+            await load();
+        }
+
+        async function load() {
+            const r = await fetch('/admin/api/access/codes');
+            const { codes, admins } = await r.json();
+
+            const sel = document.getElementById('adminSelect');
+            sel.innerHTML = '<option value="">— Pilih admin —</option>';
+            admins.forEach(a => {
+                const o = document.createElement('option');
+                o.value = a.username; o.textContent = a.username + (a.is_first_login ? ' (Belum setup)' : ' ✅');
+                sel.appendChild(o);
+            });
+
+            document.getElementById('adminStatusList').innerHTML = admins.length ? `
+      <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+        ${admins.map(a => `
+          <div class="bg-gray-800 rounded-xl p-3 text-center border ${a.is_first_login ? 'border-amber-500/30' : 'border-emerald-500/30'}">
+            <div class="text-2xl mb-1">${a.is_first_login ? '🔒' : '✅'}</div>
+            <div class="font-bold text-sm text-white">${a.username}</div>
+            <div class="text-xs mt-1 ${a.is_first_login ? 'text-amber-400' : 'text-emerald-400'}">${a.is_first_login ? 'Menunggu setup' : 'Aktif'}</div>
+          </div>`).join('')}
+      </div>` : '<p class="text-gray-500 text-sm">Tidak ada admin.</p>';
+
+            document.getElementById('codesBody').innerHTML = codes.length ? codes.map(c => `
+      <tr>
+        <td class="font-mono text-emerald-400 text-sm">${c.code}</td>
+        <td class="font-semibold text-indigo-400">${c.assigned_to || '—'}</td>
+        <td>${c.used ? '<span class="badge" style="background:rgba(239,68,68,.15);color:#f87171">Sudah dipakai</span>' : '<span class="badge" style="background:rgba(16,185,129,.15);color:#6ee7b7">Belum dipakai</span>'}</td>
+        <td class="text-gray-500 text-xs">${c.created_at}</td>
+      </tr>`).join('') : '<tr><td colspan="4" class="text-center text-gray-500 py-6">Belum ada kode yang digenerate.</td></tr>';
+        }
+
+        async function generateCode() {
+            const assigned_to = document.getElementById('adminSelect').value;
+            if (!assigned_to) return alert('Pilih admin terlebih dahulu!');
+            const r = await fetch('/admin/api/access/generate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ assigned_to }) });
+            const d = await r.json();
+            if (d.success) {
+                lastGenCode = d.code;
+                document.getElementById('generatedBox').classList.remove('hidden');
+                document.getElementById('generatedCode').textContent = d.code;
+                load();
+            } else alert(d.message);
+        }
+
+        function copyCode() {
+            navigator.clipboard.writeText(lastGenCode).then(() => {
+                const btn = document.querySelector('[onclick="copyCode()"]');
+                const t = document.createElement('div');
+                t.className = 'toast-admin'; t.style.background = '#10b981'; t.textContent = 'Kode disalin! ✅';
+                document.body.appendChild(t); setTimeout(() => t.remove(), 2500);
+            });
+        }
+        init();
+    </script>
+</body>
+
+</html>

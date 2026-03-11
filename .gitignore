@@ -1,0 +1,4 @@
+node_modules/
+db/sessions/
+db/alfityan.db
+.netlify/

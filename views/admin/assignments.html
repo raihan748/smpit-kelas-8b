@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Kelola Tugas — Admin Al-Fityan</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>tailwind.config = { darkMode: 'class', theme: { extend: { fontFamily: { sans: ['Inter', 'sans-serif'] } } } }</script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+        rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <link rel="stylesheet" href="/admin.css" />
+    <style>
+        body {
+            background: #0a0f1e;
+            color: #e2e8f0;
+            font-family: 'Inter', sans-serif;
+            display: flex;
+            min-height: 100vh
+        }
+    </style>
+</head>
+
+<body>
+    <aside
+        class="w-56 bg-gray-900/90 border-r border-gray-800 flex flex-col flex-shrink-0 fixed left-0 top-0 bottom-0 z-40">
+        <div class="p-5 border-b border-gray-800">
+            <div class="flex items-center gap-2.5">
+                <div
+                    class="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-black">
+                    AF</div>
+                <div>
+                    <div class="text-white font-bold text-sm">Al-Fityan</div>
+                    <div class="text-gray-500 text-xs">Admin Panel</div>
+                </div>
+            </div>
+            <div class="mt-3 px-2 py-1.5 bg-indigo-500/10 border border-indigo-500/20 rounded-lg">
+                <div class="text-indigo-300 text-xs">Login sebagai:</div>
+                <div id="currentUser" class="text-white text-sm font-bold">—</div>
+            </div>
+        </div>
+        <nav class="flex-1 p-3 space-y-1">
+            <a href="/admin/dashboard" class="sidebar-link"><i class="fa-solid fa-gauge"></i>Dashboard</a>
+            <a href="/admin/students" class="sidebar-link"><i class="fa-solid fa-users"></i>Siswa</a>
+            <a href="/admin/assignments" class="sidebar-link active"><i class="fa-solid fa-book-open"></i>Tugas</a>
+            <a href="/admin/grades" class="sidebar-link"><i class="fa-solid fa-star"></i>Nilai</a>
+            <a href="/admin/forum" class="sidebar-link"><i class="fa-solid fa-comments"></i>Forum</a>
+            <div id="ownerLinks" class="hidden space-y-1">
+                <div class="text-gray-600 text-xs font-bold uppercase px-3 pt-3 pb-1">Owner Only</div>
+                <a href="/admin/gallery" class="sidebar-link"><i class="fa-solid fa-images"></i>Gallery</a>
+                <a href="/admin/logs" class="sidebar-link"><i class="fa-solid fa-scroll"></i>Admin Logs</a>
+                <a href="/admin/access" class="sidebar-link"><i class="fa-solid fa-key"></i>Access Manager</a>
+            </div>
+        </nav>
+        <div class="p-3 border-t border-gray-800 space-y-1">
+            <a href="/" target="_blank" class="sidebar-link"><i class="fa-solid fa-globe"></i>Lihat Website</a>
+            <a href="/auth/logout" class="sidebar-link text-red-400"><i class="fa-solid fa-sign-out-alt"></i>Logout</a>
+        </div>
+    </aside>
+
+    <main class="ml-56 flex-1 p-6">
+        <div class="flex items-center justify-between mb-6 flex-wrap gap-3">
+            <div>
+                <h1 class="text-2xl font-black text-white">📚 Kelola Tugas</h1>
+                <p class="text-gray-400 text-sm">Buat dan kelola tugas kelas</p>
+            </div>
+            <button onclick="openModal()" class="btn btn-primary"><i class="fa-solid fa-plus"></i>Tugas Baru</button>
+        </div>
+
+        <div class="bg-gray-900 rounded-2xl border border-gray-800 overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Judul</th>
+                            <th>Mata Pelajaran</th>
+                            <th>Deadline</th>
+                            <th>Dibuat oleh</th>
+                            <th>Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="assignmentsBody">
+                        <tr>
+                            <td colspan="6" class="text-center text-gray-500 py-8">Memuat...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <div id="modal" class="modal-overlay hidden">
+        <div class="modal-box">
+            <h3 id="modalTitle" class="text-lg font-bold text-white mb-5">Tugas Baru</h3>
+            <input type="hidden" id="editId" />
+            <div class="space-y-3">
+                <div><label class="form-label">Judul Tugas</label><input id="fTitle" type="text" class="form-input"
+                        placeholder="Judul tugas..." /></div>
+                <div><label class="form-label">Mata Pelajaran</label>
+                    <select id="fSubject" class="form-input">
+                        <option>Matematika</option>
+                        <option>Bahasa Indonesia</option>
+                        <option>IPA</option>
+                        <option>IPS</option>
+                        <option>Bahasa Inggris</option>
+                        <option>TIK</option>
+                        <option>PAI</option>
+                        <option>Seni Budaya</option>
+                        <option>Prakarya</option>
+                    </select>
+                </div>
+                <div><label class="form-label">Deadline</label><input id="fDue" type="date" class="form-input" /></div>
+                <div><label class="form-label">Deskripsi</label><textarea id="fDesc" rows="3"
+                        class="form-input resize-none" placeholder="Deskripsi tugas..."></textarea></div>
+            </div>
+            <p id="modalErr" class="text-red-400 text-xs mt-2 hidden"></p>
+            <div class="flex gap-3 mt-5">
+                <button onclick="closeModal()"
+                    class="flex-1 py-2.5 bg-gray-700 text-gray-300 rounded-xl font-semibold text-sm">Batal</button>
+                <button onclick="save()" class="flex-1 btn btn-primary justify-center"><i
+                        class="fa-solid fa-check"></i>Simpan</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const subjectColors = { 'Matematika': '#3b82f6', 'Bahasa Indonesia': '#ef4444', 'IPA': '#10b981', 'IPS': '#f59e0b', 'Bahasa Inggris': '#8b5cf6', 'TIK': '#06b6d4', 'PAI': '#14b8a6', 'Seni Budaya': '#ec4899', 'Prakarya': '#f97316' };
+        let data = [];
+        async function init() {
+            const me = await (await fetch('/auth/me')).json();
+            if (!me.user) return (window.location.href = '/login.html');
+            document.getElementById('currentUser').textContent = me.user.username + (me.user.role === 'owner' ? ' 👑' : '');
+            if (me.user.role === 'owner') document.getElementById('ownerLinks').classList.remove('hidden');
+            await load();
+        }
+        async function load() {
+            const r = await fetch('/admin/api/assignments');
+            data = await r.json();
+            const color = s => subjectColors[s] || '#6366f1';
+            document.getElementById('assignmentsBody').innerHTML = data.length ? data.map((a, i) => `
+      <tr>
+        <td class="text-gray-500">${i + 1}</td>
+        <td class="font-semibold">${a.title}</td>
+        <td><span class="badge" style="background:${color(a.subject)}20;color:${color(a.subject)}">${a.subject}</span></td>
+        <td class="text-gray-400 text-sm">${a.due_date || '—'}</td>
+        <td class="text-gray-500 text-sm">${a.created_by}</td>
+        <td><div class="flex gap-2">
+          <button onclick="edit(${a.id})" class="btn btn-success text-xs py-1.5 px-3"><i class="fa-solid fa-pen"></i></button>
+          <button onclick="del(${a.id},'${a.title.replace(/'/g, "\\'")}')" class="btn btn-danger text-xs py-1.5 px-3"><i class="fa-solid fa-trash"></i></button>
+        </div></td>
+      </tr>`).join('') : '<tr><td colspan="6" class="text-center text-gray-500 py-8">Belum ada tugas.</td></tr>';
+        }
+        function openModal() { document.getElementById('modal').classList.remove('hidden'); document.getElementById('editId').value = ''; document.getElementById('fTitle').value = ''; document.getElementById('fDue').value = ''; document.getElementById('fDesc').value = ''; document.getElementById('modalTitle').textContent = 'Tugas Baru'; }
+        function edit(id) {
+            const a = data.find(x => x.id === id); if (!a) return;
+            document.getElementById('modal').classList.remove('hidden'); document.getElementById('editId').value = id;
+            document.getElementById('fTitle').value = a.title; document.getElementById('fSubject').value = a.subject;
+            document.getElementById('fDue').value = a.due_date || ''; document.getElementById('fDesc').value = a.description || '';
+            document.getElementById('modalTitle').textContent = 'Edit Tugas';
+        }
+        async function save() {
+            const id = document.getElementById('editId').value;
+            const body = { title: document.getElementById('fTitle').value, subject: document.getElementById('fSubject').value, description: document.getElementById('fDesc').value, due_date: document.getElementById('fDue').value };
+            const r = await fetch(id ? `/admin/api/assignments/${id}` : '/admin/api/assignments', { method: id ? 'PUT' : 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+            const d = await r.json();
+            if (d.success) { closeModal(); load(); showToast('Tugas disimpan!', '#10b981'); }
+            else { document.getElementById('modalErr').textContent = d.message; document.getElementById('modalErr').classList.remove('hidden'); }
+        }
+        async function del(id, title) {
+            if (!confirm(`Hapus tugas "${title}"?`)) return;
+            await fetch(`/admin/api/assignments/${id}`, { method: 'DELETE' }); load(); showToast('Tugas dihapus.', '#ef4444');
+        }
+        function closeModal() { document.getElementById('modal').classList.add('hidden'); }
+        function showToast(msg, color) { const t = document.createElement('div'); t.className = 'toast-admin'; t.style.background = color; t.textContent = msg; document.body.appendChild(t); setTimeout(() => t.remove(), 3000); }
+        init();
+    </script>
+</body>
+
+</html>

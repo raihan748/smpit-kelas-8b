@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Gallery Manager — Admin Al-Fityan</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>tailwind.config = { darkMode: 'class', theme: { extend: { fontFamily: { sans: ['Inter', 'sans-serif'] } } } }</script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+        rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <link rel="stylesheet" href="/admin.css" />
+    <style>
+        body {
+            background: #0a0f1e;
+            color: #e2e8f0;
+            font-family: 'Inter', sans-serif;
+            display: flex;
+            min-height: 100vh
+        }
+    </style>
+</head>
+
+<body>
+    <aside
+        class="w-56 bg-gray-900/90 border-r border-gray-800 flex flex-col flex-shrink-0 fixed left-0 top-0 bottom-0 z-40">
+        <div class="p-5 border-b border-gray-800">
+            <div class="flex items-center gap-2.5">
+                <div
+                    class="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-black">
+                    AF</div>
+                <div>
+                    <div class="text-white font-bold text-sm">Al-Fityan</div>
+                    <div class="text-gray-500 text-xs">Admin Panel</div>
+                </div>
+            </div>
+            <div class="mt-3 px-2 py-1.5 bg-indigo-500/10 border border-indigo-500/20 rounded-lg">
+                <div class="text-indigo-300 text-xs">Login sebagai:</div>
+                <div id="currentUser" class="text-white text-sm font-bold">—</div>
+            </div>
+        </div>
+        <nav class="flex-1 p-3 space-y-1">
+            <a href="/admin/dashboard" class="sidebar-link"><i class="fa-solid fa-gauge"></i>Dashboard</a>
+            <a href="/admin/students" class="sidebar-link"><i class="fa-solid fa-users"></i>Siswa</a>
+            <a href="/admin/assignments" class="sidebar-link"><i class="fa-solid fa-book-open"></i>Tugas</a>
+            <a href="/admin/grades" class="sidebar-link"><i class="fa-solid fa-star"></i>Nilai</a>
+            <a href="/admin/forum" class="sidebar-link"><i class="fa-solid fa-comments"></i>Forum</a>
+            <div class="space-y-1">
+                <div class="text-gray-600 text-xs font-bold uppercase px-3 pt-3 pb-1">Owner Only</div>
+                <a href="/admin/gallery" class="sidebar-link active"><i class="fa-solid fa-images"></i>Gallery</a>
+                <a href="/admin/logs" class="sidebar-link"><i class="fa-solid fa-scroll"></i>Admin Logs</a>
+                <a href="/admin/access" class="sidebar-link"><i class="fa-solid fa-key"></i>Access Manager</a>
+            </div>
+        </nav>
+        <div class="p-3 border-t border-gray-800 space-y-1">
+            <a href="/" target="_blank" class="sidebar-link"><i class="fa-solid fa-globe"></i>Lihat Website</a>
+            <a href="/auth/logout" class="sidebar-link text-red-400"><i class="fa-solid fa-sign-out-alt"></i>Logout</a>
+        </div>
+    </aside>
+
+    <main class="ml-56 flex-1 p-6">
+        <div class="mb-6">
+            <h1 class="text-2xl font-black text-white">🖼️ Gallery Manager</h1>
+            <p class="text-gray-400 text-sm">Kelola foto galeri kelas via URL (Owner only)</p>
+        </div>
+
+        <!-- URL Input area -->
+        <div class="bg-gray-900 rounded-2xl border border-gray-800 p-5 mb-6">
+            <h2 class="text-base font-bold text-white mb-3">Tambah Foto via URL</h2>
+            <div class="bg-gray-800/50 rounded-xl p-3 mb-4 border border-gray-700/50">
+                <p class="text-gray-400 text-xs">
+                    <i class="fa-solid fa-circle-info text-indigo-400 mr-1"></i>
+                    Upload foto gratis ke
+                    <a href="https://imgbb.com" target="_blank"
+                        class="text-indigo-400 hover:text-indigo-300 underline">imgbb.com</a>
+                    atau
+                    <a href="https://postimg.cc" target="_blank"
+                        class="text-indigo-400 hover:text-indigo-300 underline">postimg.cc</a>,
+                    lalu paste link gambar di bawah.
+                </p>
+            </div>
+            <input id="urlInput" type="url" placeholder="https://i.ibb.co/... (paste URL gambar)"
+                class="form-input mb-3" />
+            <div id="previewArea" class="hidden mb-4 text-center">
+                <img id="previewImg" src="" alt="Preview"
+                    class="h-40 object-cover rounded-xl border border-gray-700 mx-auto block" />
+                <p class="text-green-400 text-xs mt-2"><i class="fa-solid fa-check-circle mr-1"></i>Preview berhasil
+                    dimuat</p>
+            </div>
+            <input id="captionInput" type="text" placeholder="Keterangan foto (opsional)" class="form-input mb-3" />
+            <button id="addBtn" onclick="addPhoto()" class="btn btn-primary"><i class="fa-solid fa-plus"></i>Tambah
+                Foto</button>
+            <p id="uploadMsg" class="text-sm mt-2 hidden"></p>
+        </div>
+
+        <!-- Gallery grid -->
+        <div id="galleryGrid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"></div>
+    </main>
+
+    <script>
+        // URL preview
+        const urlInput = document.getElementById('urlInput');
+        let previewTimeout;
+        urlInput.addEventListener('input', () => {
+            clearTimeout(previewTimeout);
+            previewTimeout = setTimeout(() => {
+                const url = urlInput.value.trim();
+                if (url.startsWith('http')) {
+                    const img = document.getElementById('previewImg');
+                    img.onerror = () => document.getElementById('previewArea').classList.add('hidden');
+                    img.onload = () => document.getElementById('previewArea').classList.remove('hidden');
+                    img.src = url;
+                } else {
+                    document.getElementById('previewArea').classList.add('hidden');
+                }
+            }, 500);
+        });
+
+        async function addPhoto() {
+            const url = urlInput.value.trim();
+            if (!url) return showMsg('Masukkan URL gambar!', '#ef4444');
+            if (!url.startsWith('http')) return showMsg('URL harus dimulai dengan http:// atau https://', '#ef4444');
+            const btn = document.getElementById('addBtn');
+            btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>Menambahkan...';
+            const r = await fetch('/admin/api/gallery', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ image_url: url, caption: document.getElementById('captionInput').value })
+            });
+            const d = await r.json();
+            btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-plus"></i>Tambah Foto';
+            if (d.success) {
+                showMsg('Foto berhasil ditambahkan! ✅', '#10b981');
+                document.getElementById('previewArea').classList.add('hidden');
+                urlInput.value = '';
+                document.getElementById('captionInput').value = '';
+                loadGallery();
+            } else showMsg(d.message, '#ef4444');
+        }
+
+        function showMsg(msg, color) {
+            const el = document.getElementById('uploadMsg');
+            el.textContent = msg; el.style.color = color; el.classList.remove('hidden');
+            setTimeout(() => el.classList.add('hidden'), 4000);
+        }
+
+        async function loadGallery() {
+            const r = await fetch('/admin/api/gallery');
+            const images = await r.json();
+            const grid = document.getElementById('galleryGrid');
+            if (!images.length) { grid.innerHTML = '<div class="col-span-4 text-center text-gray-500 py-8">Belum ada foto. Tambahkan via URL sekarang!</div>'; return; }
+            grid.innerHTML = images.map(img => {
+                const src = img.filename.startsWith('http') ? img.filename : `/uploads/gallery/${img.filename}`;
+                return `
+      <div class="relative group rounded-2xl overflow-hidden bg-gray-800 border border-gray-700" style="aspect-ratio:4/3">
+        <img src="${src}" alt="${img.caption}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22400%22 height=%22300%22><rect fill=%22%231e293b%22 width=%22400%22 height=%22300%22/><text fill=%22%2394a3b8%22 font-size=%2214%22 x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22>Gambar tidak ditemukan</text></svg>'" />
+        <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-3">
+          <p class="text-white text-xs font-medium mb-2">${img.caption || 'Tanpa keterangan'}</p>
+          <button onclick="deletePhoto(${img.id})" class="btn btn-danger text-xs py-1 px-3 w-full justify-center"><i class="fa-solid fa-trash mr-1"></i>Hapus</button>
+        </div>
+      </div>`;
+            }).join('');
+        }
+
+        async function deletePhoto(id) {
+            if (!confirm('Hapus foto ini dari galeri?')) return;
+            await fetch(`/admin/api/gallery/${id}`, { method: 'DELETE' });
+            loadGallery();
+        }
+
+        async function init() {
+            const me = await (await fetch('/auth/me')).json();
+            if (!me.user) return (window.location.href = '/login.html');
+            if (me.user.role !== 'owner') return (window.location.href = '/admin/dashboard?error=forbidden');
+            document.getElementById('currentUser').textContent = me.user.username + ' 👑';
+            loadGallery();
+        }
+        init();
+    </script>
+</body>
+
+</html>
