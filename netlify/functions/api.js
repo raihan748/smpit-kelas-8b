@@ -31,9 +31,13 @@ app.use('/api', require('../../routes/api'));
 app.use('/admin/api', require('../../routes/admin'));
 
 let dbReady = false;
-const handler = serverless(app);
+let handler = null;
 
 exports.handler = async (event, context) => {
+    // CRITICAL: sql.js WASM leaves a handle on the event loop. This tells Netlify Lambda to 
+    // return the HTTP response immediately rather than waiting 10s for the loop to empty.
+    context.callbackWaitsForEmptyEventLoop = false;
+
     if (!dbReady) {
         await initDb();
         // Seed default accounts if first run
@@ -51,6 +55,8 @@ exports.handler = async (event, context) => {
             });
         }
         dbReady = true;
+        // MUST create the serverless wrapper AFTER the database is fully ready
+        handler = serverless(app);
     }
     return handler(event, context);
 };
