@@ -6,7 +6,9 @@
 const path = require('path');
 const fs = require('fs');
 
-const DB_PATH = path.join(__dirname, 'alfityan.db');
+// Use /tmp for serverless environments (Netlify only allows writing to /tmp)
+const isServerless = process.env.NETLIFY || process.env.AWS_LAMBDA_FUNCTION_VERSION;
+const DB_PATH = isServerless ? '/tmp/alfityan.db' : path.join(__dirname, 'alfityan.db');
 
 let _SQL = null;  // sql.js module (loaded once)
 let _db = null;  // in-memory Database instance (singleton)

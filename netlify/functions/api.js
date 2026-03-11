@@ -17,6 +17,14 @@ app.use(cookieSession({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Strip Netlify URL prefix so Express sees standard routes (/api/* instead of /.netlify/functions/api/api/*)
+app.use((req, res, next) => {
+    if (req.url.startsWith('/.netlify/functions/api')) {
+        req.url = req.url.replace('/.netlify/functions/api', '');
+    }
+    next();
+});
+
 // Mount routes
 app.use('/auth', require('../../routes/auth'));
 app.use('/api', require('../../routes/api'));
